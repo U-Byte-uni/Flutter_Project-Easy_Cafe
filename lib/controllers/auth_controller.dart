@@ -11,8 +11,41 @@ class AuthController extends ChangeNotifier {
   bool get isLoading => _isLoading;
   bool get isAuthenticated => _user != null;
 
+  Map<String, dynamic>? _profile;
+  Map<String, dynamic>? get profile => _profile;
+
   AuthController() {
     _user = _supabaseService.currentUser;
+    if (_user != null) {
+      loadProfile();
+    }
+  }
+
+  Future<void> loadProfile() async {
+    try {
+      _profile = await _supabaseService.getProfile();
+      notifyListeners();
+    } catch (e) {
+      debugPrint("Profile context: $e");
+    }
+  }
+
+  Future<void> updateProfile(String fullName, String? avatarUrl) async {
+    _isLoading = true;
+    notifyListeners();
+    try {
+      await _supabaseService.updateProfile(fullName, avatarUrl);
+      await loadProfile();
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> updatePassword(String newPassword) async {
+    await Supabase.instance.client.auth.updateUser(
+      UserAttributes(password: newPassword),
+    );
   }
 
   Future<void> signIn(String email, String password) async {

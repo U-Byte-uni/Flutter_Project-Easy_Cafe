@@ -108,15 +108,23 @@ class _ChatBotOverlayState extends State<ChatBotOverlay> {
 
     try {
       final response = await _aiService.getChatResponse(userText, products);
-      setState(() {
-        _messages.add({'role': 'ai', 'message': response});
-        _isTyping = false;
-      });
+      if (mounted) {
+        setState(() {
+          _messages.add({'role': 'ai', 'message': response});
+          _isTyping = false;
+        });
+      }
     } catch (e) {
-      setState(() {
-        _messages.add({'role': 'ai', 'message': "Sorry, I'm having trouble connecting right now."});
-        _isTyping = false;
-      });
+      debugPrint("Chat AI Error: $e");
+      if (mounted) {
+        setState(() {
+          _messages.add({
+            'role': 'ai', 
+            'message': "Sorry, I'm having trouble connecting to my coffee sensors. Please try again!"
+          });
+          _isTyping = false;
+        });
+      }
     }
   }
 }

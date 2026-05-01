@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'theme/app_theme.dart';
 import 'controllers/auth_controller.dart';
 import 'controllers/cafe_controller.dart';
+import 'controllers/cart_controller.dart';
 import 'views/main_navigation_wrapper.dart';
 import 'views/login_screen.dart';
 
@@ -25,6 +26,7 @@ Future<void> main() async {
       providers: [
         ChangeNotifierProvider(create: (_) => AuthController()),
         ChangeNotifierProvider(create: (_) => CafeController()),
+        ChangeNotifierProvider(create: (_) => CartController()),
       ],
       child: const EasyCafeApp(),
     ),

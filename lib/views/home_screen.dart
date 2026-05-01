@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../controllers/cafe_controller.dart';
+import '../controllers/auth_controller.dart';
 import '../widgets/category_item.dart';
 import '../widgets/product_card.dart';
 import '../theme/app_theme.dart';
@@ -41,8 +42,20 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     child: const Icon(Icons.apps, color: AppTheme.secondaryTextColor),
                   ),
-                  const CircleAvatar(
-                    backgroundImage: NetworkImage('https://i.pravatar.cc/150?u=cafe'),
+                  Consumer<AuthController>(
+                    builder: (context, auth, _) {
+                      final profile = auth.profile;
+                      final avatarUrl = profile?['avatar_url'] as String?;
+                      return CircleAvatar(
+                        backgroundColor: AppTheme.primaryColor,
+                        backgroundImage: (avatarUrl != null && avatarUrl.isNotEmpty == true) 
+                          ? NetworkImage(avatarUrl) 
+                          : null,
+                        child: (avatarUrl == null || avatarUrl.isEmpty == true)
+                          ? const Icon(Icons.person, color: Colors.black)
+                          : null,
+                      );
+                    },
                   ),
                 ],
               ),
@@ -53,9 +66,18 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               const SizedBox(height: 30),
               TextField(
+                onChanged: (value) {
+                  context.read<CafeController>().searchProducts(value);
+                },
                 decoration: InputDecoration(
                   hintText: "Find Your Coffee...",
                   prefixIcon: const Icon(Icons.search, color: AppTheme.secondaryTextColor),
+                  filled: true,
+                  fillColor: AppTheme.cardColor,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(15),
+                    borderSide: BorderSide.none,
+                  ),
                 ),
               ),
               const SizedBox(height: 30),

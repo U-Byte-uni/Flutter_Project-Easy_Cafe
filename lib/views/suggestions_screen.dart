@@ -36,6 +36,7 @@ class _SuggestionsScreenState extends State<SuggestionsScreen> {
         _isLoading = false;
       });
     } catch (e) {
+      debugPrint("Weather Fetch Error: $e");
       setState(() {
         _recommendation = "Could not fetch weather. Perfect time for a coffee anyway!";
         _isLoading = false;

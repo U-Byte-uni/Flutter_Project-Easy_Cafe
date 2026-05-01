@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../models/product.dart';
 import '../services/ai_service.dart';
+import '../controllers/cart_controller.dart';
+import '../controllers/cafe_controller.dart';
 import '../theme/app_theme.dart';
 
 class ProductDetailScreen extends StatefulWidget {
@@ -72,8 +75,16 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   ),
                 ),
                 IconButton(
-                  onPressed: () {},
-                  icon: const Icon(Icons.favorite_border, color: Colors.white),
+                  onPressed: () => context.read<CafeController>().toggleFavorite(widget.product.id),
+                  icon: Consumer<CafeController>(
+                    builder: (context, cafe, _) {
+                      final isFav = cafe.isFavorite(widget.product.id);
+                      return Icon(
+                        isFav ? Icons.favorite : Icons.favorite_border,
+                        color: isFav ? Colors.red : Colors.white,
+                      );
+                    },
+                  ),
                   style: IconButton.styleFrom(backgroundColor: Colors.black26),
                 ),
               ],
@@ -189,8 +200,22 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       SizedBox(
                         width: MediaQuery.of(context).size.width * 0.6,
                         child: ElevatedButton(
-                          onPressed: () {},
-                          child: const Text("Buy Now"),
+                          onPressed: () {
+                            context.read<CartController>().addItem(widget.product);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('${widget.product.name} added to cart!'),
+                                duration: const Duration(seconds: 2),
+                                action: SnackBarAction(
+                                  label: 'View',
+                                  onPressed: () {
+                                    // Normally you'd navigate to cart screen
+                                  },
+                                ),
+                              ),
+                            );
+                          },
+                          child: const Text("Add to Cart"),
                         ),
                       ),
                     ],

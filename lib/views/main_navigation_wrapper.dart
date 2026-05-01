@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'home_screen.dart';
 import 'suggestions_screen.dart';
+import 'favorites_screen.dart';
+import 'cart_screen.dart';
+import 'profile_screen.dart';
 import '../widgets/chat_bot_overlay.dart';
 import '../theme/app_theme.dart';
 
@@ -16,9 +19,10 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper> {
 
   final List<Widget> _pages = [
     const HomeScreen(),
+    const FavoritesScreen(),
     const SuggestionsScreen(),
-    const Center(child: Text("Cart / Orders")),
-    const Center(child: Text("Profile / Logout")),
+    const CartScreen(),
+    const ProfileScreen(),
   ];
 
   @override
@@ -36,6 +40,7 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper> {
         showUnselectedLabels: false,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
+          BottomNavigationBarItem(icon: Icon(Icons.favorite), label: "Favorites"),
           BottomNavigationBarItem(icon: Icon(Icons.auto_awesome), label: "Suggestions"),
           BottomNavigationBarItem(icon: Icon(Icons.shopping_bag), label: "Cart"),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),

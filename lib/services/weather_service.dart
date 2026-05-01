@@ -21,14 +21,16 @@ class WeatherService {
   }
 
   String getCoffeeRecommendation(double temp, String condition) {
+    String recommendation = "";
     if (temp < 15) {
-      return "It's chilly outside ($temp°C)! We recommend a hot, creamy Hot Chocolate or a Warm Latte.";
+      recommendation = "It's chilly outside ($temp°C)! We recommend a hot, creamy Hot Chocolate or a Warm Latte to keep you cozy.";
     } else if (condition.toLowerCase().contains('rain')) {
-      return "Rainy days call for a strong Espresso or a cozy Mocha.";
+      recommendation = "Rainy days call for a strong Espresso or a cozy Mocha. Perfect for watching the rain from our window!";
     } else if (temp > 25) {
-      return "It's a hot day ($temp°C)! Cool down with our Signature Iced Coffee or a Cold Brew.";
+      recommendation = "It's a hot day ($temp°C)! Cool down with our Signature Iced Coffee or a refreshingly cold Cold Brew.";
     } else {
-      return "Perfect weather for a classic Cappuccino!";
+      recommendation = "Perfect weather for a classic Cappuccino! It's the ideal balance of espresso and foam for a day like today.";
     }
+    return recommendation;
   }
 }
