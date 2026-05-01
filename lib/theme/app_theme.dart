@@ -37,7 +37,6 @@ class AppTheme {
     colorScheme: const ColorScheme.dark(
       primary: primaryColor,
       surface: cardColor,
-      background: backgroundColor,
       secondary: secondaryTextColor,
     ),
 
