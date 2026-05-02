@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:provider/provider.dart';
+import '../controllers/cafe_controller.dart';
+import '../models/product.dart';
 import '../services/weather_service.dart';
 import '../theme/app_theme.dart';
+import '../widgets/product_card.dart';
+import 'product_detail_screen.dart';
 
 class SuggestionsScreen extends StatefulWidget {
   const SuggestionsScreen({super.key});
@@ -15,6 +20,35 @@ class _SuggestionsScreenState extends State<SuggestionsScreen> {
   Map<String, dynamic>? _weatherData;
   String _recommendation = "Loading recommendation...";
   bool _isLoading = true;
+  double? _temperature;
+  String _weatherCondition = 'Clear';
+
+  List<Product> _getWeatherProducts(List<Product> allProducts) {
+    if (_temperature == null) return allProducts.take(5).toList();
+    if (_temperature! < 15) {
+      // Cold: highlight Cappuccino & Latte (warm drinks — categories typically 1 & 3)
+      final warm = allProducts.where((p) => p.categoryId == 1 || p.categoryId == 3).toList();
+      return warm.isNotEmpty ? warm : allProducts.take(5).toList();
+    } else if (_weatherCondition.toLowerCase().contains('rain')) {
+      // Rainy: highlight Espresso (category 2)
+      final strong = allProducts.where((p) => p.categoryId == 2).toList();
+      return strong.isNotEmpty ? strong : allProducts.take(5).toList();
+    } else if (_temperature! > 25) {
+      // Hot: prefer Flat White (category 4) or any with "cold"/"ice" in name
+      final cold = allProducts
+          .where((p) =>
+              p.categoryId == 4 ||
+              p.name.toLowerCase().contains('cold') ||
+              p.name.toLowerCase().contains('ice') ||
+              p.name.toLowerCase().contains('iced'))
+          .toList();
+      return cold.isNotEmpty ? cold : allProducts.take(5).toList();
+    }
+    // Pleasant: top-rated products
+    final sorted = List<Product>.from(allProducts)
+      ..sort((a, b) => b.rating.compareTo(a.rating));
+    return sorted.take(5).toList();
+  }
 
   @override
   void initState() {
@@ -31,6 +65,8 @@ class _SuggestionsScreenState extends State<SuggestionsScreen> {
       
       setState(() {
         _weatherData = data;
+        _temperature = temp;
+        _weatherCondition = condition;
         _recommendation = _weatherService.getCoffeeRecommendation(temp, condition);
         _isLoading = false;
       });
@@ -47,11 +83,12 @@ class _SuggestionsScreenState extends State<SuggestionsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
               const Text(
                 "Weather\nSuggestions",
                 style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
@@ -98,8 +135,52 @@ class _SuggestionsScreenState extends State<SuggestionsScreen> {
                 "Special for this weather",
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
-              // We could add a filtered product horizontal list here
+              const SizedBox(height: 16),
+              Consumer<CafeController>(
+                builder: (context, cafe, _) {
+                  final weatherProducts = _getWeatherProducts(cafe.products);
+                  if (cafe.isLoading) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  if (weatherProducts.isEmpty) {
+                    return const Text(
+                      'No products available.',
+                      style: TextStyle(color: AppTheme.secondaryTextColor),
+                    );
+                  }
+                  return SizedBox(
+                    height: 220,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: weatherProducts.length,
+                      itemBuilder: (context, index) {
+                        return SizedBox(
+                          width: 155,
+                          child: Padding(
+                            padding: const EdgeInsets.only(right: 12),
+                            child: ProductCard(
+                              product: weatherProducts[index],
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => ProductDetailScreen(
+                                      product: weatherProducts[index],
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: 20),
             ],
+          ),
           ),
         ),
       ),

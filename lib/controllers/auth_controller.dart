@@ -54,6 +54,7 @@ class AuthController extends ChangeNotifier {
     try {
       final response = await _supabaseService.signIn(email, password);
       _user = response.user;
+      if (_user != null) await loadProfile();
     } catch (e) {
       rethrow;
     } finally {
@@ -66,15 +67,9 @@ class AuthController extends ChangeNotifier {
     _isLoading = true;
     notifyListeners();
     try {
-      final response = await _supabaseService.signUp(email, password);
+      final response = await _supabaseService.signUp(email, password, fullName: name);
       _user = response.user;
-      
-      // Update the user's display name in metadata or profiles table
-      if (_user != null) {
-        await Supabase.instance.client.auth.updateUser(
-          UserAttributes(data: {'full_name': name}),
-        );
-      }
+      if (_user != null) await loadProfile();
     } catch (e) {
       rethrow;
     } finally {

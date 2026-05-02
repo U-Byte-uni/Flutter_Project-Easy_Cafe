@@ -43,6 +43,9 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Users can insert their own orders.') THEN
         CREATE POLICY "Users can insert their own orders." ON public.orders FOR INSERT WITH CHECK (auth.uid() = user_id);
     END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Users can update their own orders.') THEN
+        CREATE POLICY "Users can update their own orders." ON public.orders FOR UPDATE USING (auth.uid() = user_id);
+    END IF;
 END $$;
 
 -- 3. Create Order Items table

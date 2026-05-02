@@ -19,7 +19,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   final AIService _aiService = AIService();
   String _aiDescription = "";
   bool _isLoadingDescription = true;
- 
+  String _selectedSize = 'M';
 
   @override
   void initState() {
@@ -94,7 +94,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           Align(
             alignment: Alignment.bottomCenter,
             child: Container(
-              height: MediaQuery.of(context).size.height * 0.55,
+              height: MediaQuery.of(context).size.height * 0.6,
               padding: const EdgeInsets.all(25),
               decoration: const BoxDecoration(
                 color: AppTheme.backgroundColor,
@@ -152,7 +152,37 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  const SizedBox(height: 30),
+                  const Text("Size", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: ['S', 'M', 'L'].map((size) {
+                      final isSelected = _selectedSize == size;
+                      return GestureDetector(
+                        onTap: () => setState(() => _selectedSize = size),
+                        child: Container(
+                          margin: const EdgeInsets.only(right: 12),
+                          width: 52,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: isSelected ? AppTheme.primaryColor : AppTheme.cardColor,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: isSelected ? AppTheme.primaryColor : Colors.white24,
+                            ),
+                          ),
+                          alignment: Alignment.center,
+                          child: Text(
+                            size,
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: isSelected ? Colors.white : AppTheme.secondaryTextColor,
+                            ),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 20),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [

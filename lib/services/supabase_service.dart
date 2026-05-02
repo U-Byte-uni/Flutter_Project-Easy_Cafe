@@ -6,8 +6,12 @@ class SupabaseService {
   final _client = Supabase.instance.client;
 
   // Authentication
-  Future<AuthResponse> signUp(String email, String password) async {
-    return await _client.auth.signUp(email: email, password: password);
+  Future<AuthResponse> signUp(String email, String password, {String? fullName}) async {
+    return await _client.auth.signUp(
+      email: email,
+      password: password,
+      data: fullName != null ? {'full_name': fullName} : null,
+    );
   }
 
   Future<AuthResponse> signIn(String email, String password) async {
@@ -47,6 +51,17 @@ class SupabaseService {
         .select('*, order_items(*, products(*))')
         .eq('user_id', user.id)
         .order('created_at', ascending: false);
+  }
+
+  Future<void> cancelOrder(String orderId) async {
+    final user = currentUser;
+    if (user == null) throw 'User not authenticated';
+    await _client
+        .from('orders')
+        .update({'status': 'Cancelled'})
+        .eq('id', orderId)
+        .eq('user_id', user.id)
+        .eq('status', 'Pending');
   }
 
   Future<void> createOrder(double total, List<Map<String, dynamic>> items) async {
