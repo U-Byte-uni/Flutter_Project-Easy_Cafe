@@ -11,6 +11,20 @@ class AppTheme {
   static const Color cardColor = Color(0xFF141921);
   static const Color secondaryTextColor = Color(0xFF52555A);
 
+  // Background gradient: near-black → dark espresso brown
+  static const LinearGradient backgroundGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [Color(0xFF0C0F14), Color(0xFF1B0E08)],
+  );
+
+  // Chat overlay gradient: deep espresso → dark neutral (distinct from app bg)
+  static const LinearGradient chatGradient = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [Color(0xFF1A0A05), Color(0xFF0E0E14)],
+  );
+
   static ThemeData darkTheme = ThemeData(
     useMaterial3: true,
     brightness: Brightness.dark,
