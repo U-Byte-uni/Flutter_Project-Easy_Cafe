@@ -19,7 +19,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   final AIService _aiService = AIService();
   String _aiDescription = "";
   bool _isLoadingDescription = true;
-  String _selectedSize = 'M';
+ 
 
   @override
   void initState() {
@@ -152,37 +152,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  const Text("Size", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 10),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: ['S', 'M', 'L'].map((size) {
-                      final isSelected = _selectedSize == size;
-                      return GestureDetector(
-                        onTap: () => setState(() => _selectedSize = size),
-                        child: Container(
-                          width: MediaQuery.of(context).size.width * 0.25,
-                          padding: const EdgeInsets.symmetric(vertical: 10),
-                          decoration: BoxDecoration(
-                            color: isSelected ? Colors.transparent : AppTheme.cardColor,
-                            border: Border.all(
-                              color: isSelected ? AppTheme.primaryColor : Colors.transparent,
-                            ),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Center(
-                            child: Text(
-                              size,
-                              style: TextStyle(
-                                color: isSelected ? AppTheme.primaryColor : AppTheme.secondaryTextColor,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ),
-                      );
-                    }).toList(),
-                  ),
                   const SizedBox(height: 30),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
