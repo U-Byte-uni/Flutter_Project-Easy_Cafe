@@ -25,16 +25,18 @@ class _SuggestionsScreenState extends State<SuggestionsScreen> {
 
   List<Product> _getWeatherProducts(List<Product> allProducts) {
     if (_temperature == null) return allProducts.take(5).toList();
+    // Category IDs from the Supabase schema:
+    // 1 = Cappuccino, 2 = Espresso, 3 = Latte, 4 = Flat White
     if (_temperature! < 15) {
-      // Cold: highlight Cappuccino & Latte (warm drinks — categories typically 1 & 3)
+      // Cold: highlight warm drinks — Cappuccino (1) & Latte (3)
       final warm = allProducts.where((p) => p.categoryId == 1 || p.categoryId == 3).toList();
       return warm.isNotEmpty ? warm : allProducts.take(5).toList();
     } else if (_weatherCondition.toLowerCase().contains('rain')) {
-      // Rainy: highlight Espresso (category 2)
+      // Rainy: highlight strong coffee — Espresso (2)
       final strong = allProducts.where((p) => p.categoryId == 2).toList();
       return strong.isNotEmpty ? strong : allProducts.take(5).toList();
     } else if (_temperature! > 25) {
-      // Hot: prefer Flat White (category 4) or any with "cold"/"ice" in name
+      // Hot: prefer Flat White (4) or any product with "cold"/"ice"/"iced" in name
       final cold = allProducts
           .where((p) =>
               p.categoryId == 4 ||
@@ -44,7 +46,7 @@ class _SuggestionsScreenState extends State<SuggestionsScreen> {
           .toList();
       return cold.isNotEmpty ? cold : allProducts.take(5).toList();
     }
-    // Pleasant: top-rated products
+    // Pleasant weather: top-rated products
     final sorted = List<Product>.from(allProducts)
       ..sort((a, b) => b.rating.compareTo(a.rating));
     return sorted.take(5).toList();

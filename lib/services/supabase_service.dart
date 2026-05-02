@@ -55,7 +55,7 @@ class SupabaseService {
 
   Future<void> cancelOrder(String orderId) async {
     final user = currentUser;
-    if (user == null) throw 'User not authenticated';
+    if (user == null) throw Exception('User not authenticated');
     await _client
         .from('orders')
         .update({'status': 'Cancelled'})
