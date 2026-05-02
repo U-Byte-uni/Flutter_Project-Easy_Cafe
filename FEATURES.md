@@ -305,7 +305,7 @@ The following features were **not found** in the codebase:
 - ❌ Loyalty / rewards programme
 - ❌ Push notifications
 - ❌ Maps integration
-- ❌ Localization / i18n (single language — English only)
+- ❌ Localisation / i18n (single language — English only)
 - ❌ Light theme / theme toggle
 - ❌ Offline mode / local database caching
 - ❌ Analytics or crash reporting
