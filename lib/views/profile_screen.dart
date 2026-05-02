@@ -12,8 +12,13 @@ class ProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthController>();
-    final user = auth.user;
     final profile = auth.profile;
+    final user = auth.user;
+    final displayName = (profile?['full_name']?.toString().trim().isNotEmpty == true)
+      ? profile!['full_name'].toString().trim()
+      : (user?.userMetadata?['full_name']?.toString().trim().isNotEmpty == true)
+        ? user!.userMetadata!['full_name'].toString().trim()
+        : 'User';
 
     return Scaffold(
       appBar: AppBar(
@@ -37,12 +42,13 @@ class ProfileScreen extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              profile?['full_name'] ?? user?.email?.split('@')[0] ?? 'User',
-              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-            ),
-            Text(
-              user?.email ?? '',
-              style: const TextStyle(color: Colors.grey),
+              displayName,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
             ),
             const SizedBox(height: 32),
             _buildProfileItem(Icons.shopping_bag_outlined, 'My Orders', () {

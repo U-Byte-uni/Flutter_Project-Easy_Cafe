@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../controllers/auth_controller.dart';
-import '../controllers/cafe_controller.dart';
 import '../theme/app_theme.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -35,8 +34,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final auth = context.watch<AuthController>();
-
     return Scaffold(
       appBar: AppBar(title: const Text('Settings')),
       body: SingleChildScrollView(
@@ -88,69 +85,31 @@ class _SettingsScreenState extends State<SettingsScreen> {
             const SizedBox(height: 30),
             const Divider(color: Colors.white10),
             const SizedBox(height: 10),
-            _buildFavoritesSection(),
+            _buildAccountSection(),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildFavoritesSection() {
-    return Consumer<CafeController>(
-      builder: (context, cafe, child) {
-        final favProducts = cafe.products.where((p) => cafe.isFavorite(p.id)).toList();
-        
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              "Account Management",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 15),
-            ListTile(
-              leading: const Icon(Icons.favorite, color: Colors.red),
-              title: const Text("Clear All Favorites"),
-              subtitle: Text("${favProducts.length} items saved"),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: favProducts.isEmpty ? null : () => _showClearFavoritesDialog(context, cafe),
-            ),
-            ListTile(
-              leading: const Icon(Icons.logout, color: Colors.orange),
-              title: const Text("Logout"),
-              onTap: () async {
-                await context.read<AuthController>().signOut();
-                if (mounted) Navigator.pop(context);
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  void _showClearFavoritesDialog(BuildContext context, CafeController cafe) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppTheme.cardColor,
-        title: const Text("Clear Favorites?"),
-        content: const Text("This will remove all items from your favorites list."),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Cancel", style: TextStyle(color: Colors.white70)),
-          ),
-          TextButton(
-            onPressed: () async {
-              // We'll add a clearAllFavorites method to controller
-              await cafe.clearAllFavorites();
-              if (mounted) Navigator.pop(context);
-            },
-            child: const Text("Clear", style: TextStyle(color: Colors.red)),
-          ),
-        ],
-      ),
+  Widget _buildAccountSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          "Account Management",
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 15),
+        ListTile(
+          leading: const Icon(Icons.logout, color: Colors.orange),
+          title: const Text("Logout"),
+          onTap: () async {
+            await context.read<AuthController>().signOut();
+            if (mounted) Navigator.pop(context);
+          },
+        ),
+      ],
     );
   }
 

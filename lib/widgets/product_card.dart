@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/product.dart';
 import '../controllers/cafe_controller.dart';
+import '../controllers/cart_controller.dart';
 import '../theme/app_theme.dart';
 
 class ProductCard extends StatelessWidget {
@@ -74,33 +75,38 @@ class ProductCard extends StatelessWidget {
               product.name,
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
+            const SizedBox(height: 2),
             Text(
               "With ${product.roastedLevel}",
               style: const TextStyle(color: AppTheme.secondaryTextColor, fontSize: 12),
             ),
-            const Spacer(),
+            const SizedBox(height: 8),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                RichText(
-                  text: TextSpan(
-                    text: '\$ ',
-                    style: const TextStyle(color: AppTheme.primaryColor, fontWeight: FontWeight.bold),
-                    children: [
-                      TextSpan(
-                        text: product.price.toStringAsFixed(2),
-                        style: const TextStyle(color: Colors.white, fontSize: 16),
-                      ),
-                    ],
+                Text(
+                  '\$ ${product.price.toStringAsFixed(2)}',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
-                Container(
-                  padding: const EdgeInsets.all(4),
-                  decoration: BoxDecoration(
-                    color: AppTheme.primaryColor,
-                    borderRadius: BorderRadius.circular(10),
+                GestureDetector(
+                  onTap: () {
+                    context.read<CartController>().addItem(product);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('${product.name} added to cart')),
+                    );
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: AppTheme.primaryColor,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(Icons.add, color: Colors.white, size: 20),
                   ),
-                  child: const Icon(Icons.add, color: Colors.white, size: 20),
                 ),
               ],
             ),
