@@ -26,6 +26,43 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
     });
   }
 
+  Future<void> _confirmOrder(String orderId) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppTheme.cardColor,
+        title: const Text('Confirm Order'),
+        content: const Text('Are you sure you want to confirm this order?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('No'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Yes, Confirm', style: TextStyle(color: Colors.blue)),
+          ),
+        ],
+      ),
+    );
+    if (confirm != true || !mounted) return;
+    try {
+      await _supabase.confirmOrder(orderId);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Order confirmed!')),
+        );
+        _refresh();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to confirm order: $e')),
+        );
+      }
+    }
+  }
+
   Future<void> _cancelOrder(String orderId) async {
     final confirm = await showDialog<bool>(
       context: context,
@@ -187,28 +224,48 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                         );
                       }),
                     ],
-                    // Cancel button (only for Pending orders)
+                    // Action buttons (only for Pending orders)
                     if (status == 'Pending') ...[
                       const SizedBox(height: 12),
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: OutlinedButton(
-                          onPressed: () => _cancelOrder(order['id']),
-                          style: OutlinedButton.styleFrom(
-                            side: const BorderSide(color: Colors.red),
-                            foregroundColor: Colors.red,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 6,
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          OutlinedButton(
+                            onPressed: () => _confirmOrder(order['id']),
+                            style: OutlinedButton.styleFrom(
+                              side: const BorderSide(color: Colors.blue),
+                              foregroundColor: Colors.blue,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 6,
+                              ),
+                              minimumSize: Size.zero,
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
                             ),
-                            minimumSize: Size.zero,
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
+                            child: const Text('Confirm Order', style: TextStyle(fontSize: 13)),
                           ),
-                          child: const Text('Cancel Order', style: TextStyle(fontSize: 13)),
-                        ),
+                          const SizedBox(width: 8),
+                          OutlinedButton(
+                            onPressed: () => _cancelOrder(order['id']),
+                            style: OutlinedButton.styleFrom(
+                              side: const BorderSide(color: Colors.red),
+                              foregroundColor: Colors.red,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 6,
+                              ),
+                              minimumSize: Size.zero,
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                            child: const Text('Cancel Order', style: TextStyle(fontSize: 13)),
+                          ),
+                        ],
                       ),
                     ],
                   ],
@@ -227,6 +284,8 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
     switch (status) {
       case 'Completed':
         return Colors.green;
+      case 'Confirmed':
+        return Colors.blue;
       case 'Pending':
         return Colors.orange;
       case 'Cancelled':

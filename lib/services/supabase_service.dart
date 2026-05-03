@@ -64,6 +64,17 @@ class SupabaseService {
         .eq('status', 'Pending');
   }
 
+  Future<void> confirmOrder(String orderId) async {
+    final user = currentUser;
+    if (user == null) throw Exception('User not authenticated');
+    await _client
+        .from('orders')
+        .update({'status': 'Confirmed'})
+        .eq('id', orderId)
+        .eq('user_id', user.id)
+        .eq('status', 'Pending');
+  }
+
   Future<void> createOrder(double total, List<Map<String, dynamic>> items) async {
     final user = currentUser;
     if (user == null) throw 'User not authenticated';
