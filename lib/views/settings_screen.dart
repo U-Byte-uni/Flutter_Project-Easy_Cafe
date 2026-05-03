@@ -35,11 +35,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Settings')),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          children: [
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        title: const Text('Settings'),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+      ),
+      body: Container(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: const BoxDecoration(gradient: AppTheme.backgroundGradient),
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              children: [
             const CircleAvatar(
               radius: 50,
               backgroundColor: AppTheme.cardColor,
@@ -88,6 +98,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
             _buildAccountSection(),
           ],
         ),
+      ),
+      ),
       ),
     );
   }
