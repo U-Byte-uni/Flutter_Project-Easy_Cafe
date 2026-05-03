@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../controllers/cafe_controller.dart';
 import '../controllers/auth_controller.dart';
 import '../widgets/category_item.dart';
@@ -35,13 +36,19 @@ class _HomeScreenState extends State<HomeScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: AppTheme.cardColor,
-                      borderRadius: BorderRadius.circular(10),
+                  ClipOval(
+                    child: Container(
+                      width: 55,
+                      height: 55,
+                      decoration: BoxDecoration(
+                        color: AppTheme.cardColor,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Image.asset(
+                        'assets/images/logo.png',
+                        fit: BoxFit.cover,
+                      ),
                     ),
-                    child: const Icon(Icons.apps, color: AppTheme.secondaryTextColor),
                   ),
                   Consumer<AuthController>(
                     builder: (context, auth, _) {
@@ -60,11 +67,37 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ],
               ),
-              const SizedBox(height: 30),
-              const Text(
-                "Find the best\ncoffee for you",
-                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+              const SizedBox(height: 20),
+              
+              // Cafe Title - Comic Sans MS, Bold, Bigger, Whitish color
+              Text(
+                "Easy Café",
+                style: GoogleFonts.comicNeue(
+                  fontSize: 56,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1,
+                  color: Colors.white.withOpacity(0.92),
+                ),
               ),
+              const SizedBox(height: 10),
+              
+              // Motto - Using Satisfy font (beautiful script font)
+              Text(
+                "Find the best\ncoffee for you",
+                style: GoogleFonts.satisfy(
+                  fontSize: 32,
+                  height: 1.2,
+                  color: AppTheme.primaryColor,
+                  shadows: [
+                    const Shadow(
+                      offset: Offset(1, 1),
+                      blurRadius: 3,
+                      color: Colors.black26,
+                    ),
+                  ],
+                ),
+              ),
+              
               const SizedBox(height: 30),
               TextField(
                 onChanged: (value) {
@@ -118,27 +151,98 @@ class _HomeScreenState extends State<HomeScreen> {
                     if (cafe.products.isEmpty) {
                       return const Center(child: Text("No products found."));
                     }
-                    return GridView.builder(
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        childAspectRatio: 0.7,
-                        crossAxisSpacing: 15,
-                        mainAxisSpacing: 15,
-                      ),
-                      itemCount: cafe.products.length,
-                      itemBuilder: (context, index) {
-                        return ProductCard(
-                          product: cafe.products[index],
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => ProductDetailScreen(product: cafe.products[index]),
+                    
+                    // Filter products into beverages and snacks
+                    final beverages = cafe.products.where((product) => 
+                      product.categoryId == 1 ||
+                      product.categoryId == 2 ||
+                      product.categoryId == 3 ||
+                      product.categoryId == 4
+                    ).toList();
+                    
+                    final snacks = cafe.products.where((product) => 
+                      product.categoryId != 1 &&
+                      product.categoryId != 2 &&
+                      product.categoryId != 3 &&
+                      product.categoryId != 4
+                    ).toList();
+                    
+                    return SingleChildScrollView(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (beverages.isNotEmpty) ...[
+                            const Text(
+                              "☕ Hot & Cold Beverages",
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
                               ),
-                            );
-                          },
-                        );
-                      },
+                            ),
+                            const SizedBox(height: 15),
+                            GridView.builder(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 2,
+                                childAspectRatio: 0.7,
+                                crossAxisSpacing: 15,
+                                mainAxisSpacing: 15,
+                              ),
+                              itemCount: beverages.length,
+                              itemBuilder: (context, index) {
+                                return ProductCard(
+                                  product: beverages[index],
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => ProductDetailScreen(product: beverages[index]),
+                                      ),
+                                    );
+                                  },
+                                );
+                              },
+                            ),
+                            const SizedBox(height: 30),
+                          ],
+                          
+                          if (snacks.isNotEmpty) ...[
+                            const Text(
+                              "🍰 Snacks & Pastries",
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 15),
+                            GridView.builder(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 2,
+                                childAspectRatio: 0.7,
+                                crossAxisSpacing: 15,
+                                mainAxisSpacing: 15,
+                              ),
+                              itemCount: snacks.length,
+                              itemBuilder: (context, index) {
+                                return ProductCard(
+                                  product: snacks[index],
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => ProductDetailScreen(product: snacks[index]),
+                                      ),
+                                    );
+                                  },
+                                );
+                              },
+                            ),
+                          ],
+                        ],
+                      ),
                     );
                   },
                 ),
