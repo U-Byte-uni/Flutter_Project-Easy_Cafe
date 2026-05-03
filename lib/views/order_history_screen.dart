@@ -70,11 +70,12 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
       appBar: AppBar(
         title: const Text('Order History'),
         backgroundColor: Colors.transparent,
+        foregroundColor: Colors.white,
         elevation: 0,
         actions: [
           IconButton(
             onPressed: _clearHistory,
-            icon: const Icon(Icons.delete_sweep_outlined),
+            icon: const Icon(Icons.delete_sweep_outlined, color: Colors.white),
             tooltip: 'Clear History',
           ),
         ],
