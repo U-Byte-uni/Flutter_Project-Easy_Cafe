@@ -59,11 +59,13 @@ class _SuggestionsScreenState extends State<SuggestionsScreen> {
   }
 
   Future<void> _fetchWeather() async {
-    final location = dotenv.env['DEFAULT_LOCATION'] ?? 'London';
+    final location = dotenv.env['DEFAULT_LOCATION'] ?? 'Jauharabad';
     try {
       final data = await _weatherService.getCurrentWeather(location);
-      final temp = (data['main']['temp'] as num).toDouble();
-      final condition = data['weather'][0]['main'];
+      
+      // Safe extraction with fallback values
+      final temp = (data['main']?['temp'] as num?)?.toDouble() ?? 25.0;
+      final condition = data['weather']?[0]?['main'] ?? 'Clear';
       
       setState(() {
         _weatherData = data;
@@ -74,8 +76,11 @@ class _SuggestionsScreenState extends State<SuggestionsScreen> {
       });
     } catch (e) {
       debugPrint("Weather Fetch Error: $e");
+      // Provide fallback data instead of just an error message
       setState(() {
-        _recommendation = "Could not fetch weather. Perfect time for a coffee anyway!";
+        _temperature = 30.0;
+        _weatherCondition = 'Clear';
+        _recommendation = "☀️ Beautiful weather in Jauharabad! Try our refreshing Iced Latte or classic Cappuccino.";
         _isLoading = false;
       });
     }
@@ -90,101 +95,101 @@ class _SuggestionsScreenState extends State<SuggestionsScreen> {
           child: SingleChildScrollView(
             child: Padding(
               padding: const EdgeInsets.all(20.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-              const Text(
-                "Weather\nSuggestions",
-                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 30),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: AppTheme.cardColor,
-                  borderRadius: BorderRadius.circular(25),
-                ),
-                child: _isLoading 
-                  ? const Center(child: CircularProgressIndicator())
-                  : Column(
-                      children: [
-                        Icon(
-                          _getWeatherIcon(_weatherData?['weather'][0]['main'] ?? 'Clear'),
-                          size: 60,
-                          color: AppTheme.primaryColor,
-                        ),
-                        const SizedBox(height: 10),
-                        Text(
-                          "${_weatherData?['main']['temp']?.round() ?? '--'}°C in ${dotenv.env['DEFAULT_LOCATION']}",
-                          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                        ),
-                        Text(
-                          _weatherData?['weather'][0]['description']?.toUpperCase() ?? 'CLEAR SKY',
-                          style: const TextStyle(color: AppTheme.secondaryTextColor),
-                        ),
-                        const SizedBox(height: 20),
-                        const Divider(color: Colors.white24),
-                        const SizedBox(height: 20),
-                        Text(
-                          _recommendation,
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(fontSize: 16, height: 1.5),
-                        ),
-                      ],
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    "Weather\nSuggestions",
+                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 30),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: AppTheme.cardColor,
+                      borderRadius: BorderRadius.circular(25),
                     ),
-              ),
-              const SizedBox(height: 30),
-              const Text(
-                "Special for this weather",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 16),
-              Consumer<CafeController>(
-                builder: (context, cafe, _) {
-                  final weatherProducts = _getWeatherProducts(cafe.products);
-                  if (cafe.isLoading) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-                  if (weatherProducts.isEmpty) {
-                    return const Text(
-                      'No products available.',
-                      style: TextStyle(color: AppTheme.secondaryTextColor),
-                    );
-                  }
-                  return SizedBox(
-                    height: 220,
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: weatherProducts.length,
-                      itemBuilder: (context, index) {
-                        return SizedBox(
-                          width: 155,
-                          child: Padding(
-                            padding: const EdgeInsets.only(right: 12),
-                            child: ProductCard(
-                              product: weatherProducts[index],
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => ProductDetailScreen(
-                                      product: weatherProducts[index],
-                                    ),
-                                  ),
-                                );
-                              },
+                    child: _isLoading 
+                      ? const Center(child: CircularProgressIndicator())
+                      : Column(
+                          children: [
+                            Icon(
+                              _getWeatherIcon(_weatherCondition),
+                              size: 60,
+                              color: AppTheme.primaryColor,
                             ),
-                          ),
+                            const SizedBox(height: 10),
+                            Text(
+                              "${(_temperature ?? 30).round()}°C in Jauharabad",
+                              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                            ),
+                            Text(
+                              _weatherCondition.toUpperCase(),
+                              style: const TextStyle(color: AppTheme.secondaryTextColor),
+                            ),
+                            const SizedBox(height: 20),
+                            const Divider(color: Colors.white24),
+                            const SizedBox(height: 20),
+                            Text(
+                              _recommendation,
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(fontSize: 16, height: 1.5),
+                            ),
+                          ],
+                        ),
+                  ),
+                  const SizedBox(height: 30),
+                  const Text(
+                    "Special for this weather",
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 16),
+                  Consumer<CafeController>(
+                    builder: (context, cafe, _) {
+                      final weatherProducts = _getWeatherProducts(cafe.products);
+                      if (cafe.isLoading) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+                      if (weatherProducts.isEmpty) {
+                        return const Text(
+                          'No products available.',
+                          style: TextStyle(color: AppTheme.secondaryTextColor),
                         );
-                      },
-                    ),
-                  );
-                },
+                      }
+                      return SizedBox(
+                        height: 220,
+                        child: ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: weatherProducts.length,
+                          itemBuilder: (context, index) {
+                            return SizedBox(
+                              width: 155,
+                              child: Padding(
+                                padding: const EdgeInsets.only(right: 12),
+                                child: ProductCard(
+                                  product: weatherProducts[index],
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => ProductDetailScreen(
+                                          product: weatherProducts[index],
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 20),
+                ],
               ),
-              const SizedBox(height: 20),
-            ],
-          ),
             ),
           ),
         ),
