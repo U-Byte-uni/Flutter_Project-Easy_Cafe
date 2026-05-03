@@ -20,6 +20,49 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
     _ordersFuture = _supabase.getOrders();
   }
 
+  void _refresh() {
+    setState(() {
+      _ordersFuture = _supabase.getOrders();
+    });
+  }
+
+  Future<void> _clearHistory() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppTheme.cardColor,
+        title: const Text('Clear History'),
+        content: const Text('Are you sure you want to delete all your order history? This cannot be undone.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Clear All', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    try {
+      await _supabase.clearOrderHistory();
+      if (mounted) {
+        _refresh();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Order history cleared.')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to clear history: $e')),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -27,7 +70,15 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
       appBar: AppBar(
         title: const Text('Order History'),
         backgroundColor: Colors.transparent,
+        foregroundColor: Colors.white,
         elevation: 0,
+        actions: [
+          IconButton(
+            onPressed: _clearHistory,
+            icon: const Icon(Icons.delete_sweep_outlined, color: Colors.white),
+            tooltip: 'Clear History',
+          ),
+        ],
       ),
       body: Container(
         width: double.infinity,
