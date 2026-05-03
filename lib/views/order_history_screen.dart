@@ -66,8 +66,18 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Order History')),
-      body: FutureBuilder<List<Map<String, dynamic>>>(
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        title: const Text('Order History'),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+      ),
+      body: Container(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: const BoxDecoration(gradient: AppTheme.backgroundGradient),
+        child: SafeArea(
+          child: FutureBuilder<List<Map<String, dynamic>>>(
         future: _ordersFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -207,6 +217,8 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
             },
           );
         },
+      ),
+        ),
       ),
     );
   }

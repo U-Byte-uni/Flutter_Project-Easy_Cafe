@@ -86,7 +86,7 @@ class _SuggestionsScreenState extends State<SuggestionsScreen> {
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: SafeArea(
-          child: Padding(
+          child: SingleChildScrollView(
             padding: const EdgeInsets.all(20.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
