@@ -53,28 +53,6 @@ class SupabaseService {
         .order('created_at', ascending: false);
   }
 
-  Future<void> cancelOrder(String orderId) async {
-    final user = currentUser;
-    if (user == null) throw Exception('User not authenticated');
-    await _client
-        .from('orders')
-        .update({'status': 'Cancelled'})
-        .eq('id', orderId)
-        .eq('user_id', user.id)
-        .eq('status', 'Pending');
-  }
-
-  Future<void> confirmOrder(String orderId) async {
-    final user = currentUser;
-    if (user == null) throw Exception('User not authenticated');
-    await _client
-        .from('orders')
-        .update({'status': 'Confirmed'})
-        .eq('id', orderId)
-        .eq('user_id', user.id)
-        .eq('status', 'Pending');
-  }
-
   Future<void> createOrder(double total, List<Map<String, dynamic>> items) async {
     final user = currentUser;
     if (user == null) throw 'User not authenticated';
@@ -82,7 +60,7 @@ class SupabaseService {
     final order = await _client.from('orders').insert({
       'user_id': user.id,
       'total_price': total,
-      'status': 'Pending',
+      'status': 'Confirmed',
     }).select().single();
 
     final orderItems = items.map((item) => {

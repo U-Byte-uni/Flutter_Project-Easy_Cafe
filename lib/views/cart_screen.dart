@@ -139,10 +139,76 @@ class CartScreen extends StatelessWidget {
                               
                               if (context.mounted) {
                                 Navigator.pop(context); // Close loading
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Order placed successfully!')),
-                                );
                                 cart.clear();
+                                showDialog(
+                                  context: context,
+                                  barrierDismissible: false,
+                                  builder: (ctx) => AlertDialog(
+                                    backgroundColor: const Color(0xFF1E1E2E),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    content: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        const SizedBox(height: 8),
+                                        Container(
+                                          width: 72,
+                                          height: 72,
+                                          decoration: BoxDecoration(
+                                            color: AppTheme.primaryColor.withOpacity(0.15),
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: const Icon(
+                                            Icons.check_circle_outline_rounded,
+                                            color: AppTheme.primaryColor,
+                                            size: 44,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 20),
+                                        const Text(
+                                          'Thank You!',
+                                          style: TextStyle(
+                                            fontSize: 22,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 10),
+                                        const Text(
+                                          'Your order has been placed and confirmed. We\'ll have your coffee ready soon ☕',
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            color: Colors.white70,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 24),
+                                        SizedBox(
+                                          width: double.infinity,
+                                          child: ElevatedButton(
+                                            onPressed: () => Navigator.pop(ctx),
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: AppTheme.primaryColor,
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius: BorderRadius.circular(12),
+                                              ),
+                                              padding: const EdgeInsets.symmetric(vertical: 14),
+                                            ),
+                                            child: const Text(
+                                              'Done',
+                                              style: TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.black,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
                               }
                             } catch (e) {
                               if (context.mounted) {
