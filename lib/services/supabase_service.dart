@@ -73,6 +73,21 @@ class SupabaseService {
     await _client.from('order_items').insert(orderItems);
   }
 
+  Future<void> clearOrderHistory() async {
+    final user = currentUser;
+    if (user == null) throw 'User not authenticated';
+    // Delete order_items first (foreign key constraint), then orders
+    final orders = await _client
+        .from('orders')
+        .select('id')
+        .eq('user_id', user.id);
+    final orderIds = (orders as List).map((o) => o['id'] as String).toList();
+    if (orderIds.isNotEmpty) {
+      await _client.from('order_items').delete().inFilter('order_id', orderIds);
+      await _client.from('orders').delete().eq('user_id', user.id);
+    }
+  }
+
   // Database - Favorites
   Future<void> toggleFavorite(int productId) async {
     final user = currentUser;
