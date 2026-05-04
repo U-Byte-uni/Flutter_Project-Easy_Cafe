@@ -59,7 +59,29 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper> {
           );
         },
         backgroundColor: AppTheme.primaryColor,
-        child: const Icon(Icons.chat_bubble, color: Colors.white),
+        child: Stack(
+          clipBehavior: Clip.none,
+          alignment: Alignment.center,
+          children: [
+            const Icon(Icons.local_cafe, color: Colors.white, size: 24),
+            Positioned(
+              right: -2,
+              bottom: -2,
+              child: Container(
+                padding: const EdgeInsets.all(2),
+                decoration: const BoxDecoration(
+                  color: Color(0xFF1A0A05),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.auto_awesome,
+                  color: Colors.white,
+                  size: 10,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

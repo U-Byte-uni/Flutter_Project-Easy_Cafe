@@ -13,6 +13,74 @@ class AIService {
   
   String get _apiKey => dotenv.env['OPENROUTER_API_KEY'] ?? '';
 
+  bool _isCafeRelated(String prompt, List<Product> menu) {
+    final text = prompt.toLowerCase();
+    const strongKeywords = [
+      'easy cafe',
+      'cafe',
+      'coffee',
+      'menu',
+      'drink',
+      'latte',
+      'espresso',
+      'cappuccino',
+      'flat white',
+      'mocha',
+      'cart',
+      'checkout',
+      'favorite',
+      'order',
+    ];
+    const allowedPhrases = [
+      'show menu',
+      'show the menu',
+      'check price',
+      'check prices',
+      'tell cheapest',
+      'cheapest',
+      'best',
+      'hot offer',
+      'hot offers',
+      'offer',
+      'offers',
+      'deal',
+      'discount',
+      'recommend',
+      'recommendation',
+      'suggest',
+      'suggestion',
+      'price',
+      'cost',
+    ];
+    if (strongKeywords.any(text.contains)) return true;
+    if (allowedPhrases.any(text.contains)) return true;
+    for (final product in menu) {
+      if (text.contains(product.name.toLowerCase())) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  bool _isOrderActionRequest(String prompt) {
+    final text = prompt.toLowerCase();
+    const phrases = [
+      'order for me',
+      'place order',
+      'place an order',
+      'buy for me',
+      'purchase for me',
+      'checkout for me',
+      'order this for me',
+      'add to cart for me',
+      'make an order',
+      'can you order',
+      'can you place an order',
+      'can you buy',
+    ];
+    return phrases.any(text.contains);
+  }
+
   // Feature 1: Chatbot that answers questions about menu
   Future<String> getChatResponse(String userPrompt, List<Product> menu) async {
     if (_apiKey.isEmpty) {
@@ -20,10 +88,19 @@ class AIService {
       return "AI Service is not configured. Please check app settings.";
     }
 
+    if (!_isCafeRelated(userPrompt, menu)) {
+      return "I can only help with Easy Cafe questions like menu items, prices, orders, or app features.";
+    }
+
+    if (_isOrderActionRequest(userPrompt)) {
+      return "I can't perform that specified task. You can place orders directly in the app using the cart.";
+    }
+
     final menuDetails = menu.map((p) => "${p.name}: \$${p.price.toStringAsFixed(2)}").join(", ");
     final systemPrompt = "You are an AI assistant for Easy Cafe. Here is our current menu: $menuDetails. "
         "Answer user questions about the menu, lowest cost items, or premium items. "
-        "Be friendly and helpful. If asked for something not on the menu, politely mention what we do have.";
+        "Be friendly and helpful. If asked for something not on the menu, politely mention what we do have. "
+        "If the user asks about anything unrelated to Easy Cafe, respond: 'I can only help with Easy Cafe questions.'";
     
     try {
       debugPrint("🤖 Sending request to OpenRouter with model: $_primaryModel");
