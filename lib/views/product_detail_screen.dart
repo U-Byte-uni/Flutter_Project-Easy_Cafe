@@ -111,7 +111,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         children: [
                           Text(
                             widget.product.name,
-                            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              fontFamily: AppTheme.headingFontFamily,
+                            ),
                           ),
                           Text(
                             "With ${widget.product.roastedLevel}",

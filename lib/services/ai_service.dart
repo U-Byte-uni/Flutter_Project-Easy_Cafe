@@ -21,6 +21,14 @@ class AIService {
       'coffee',
       'menu',
       'drink',
+      'snack',
+      'snacks',
+      'pastry',
+      'pastries',
+      'dessert',
+      'cake',
+      'cookie',
+      'muffin',
       'latte',
       'espresso',
       'cappuccino',
@@ -34,17 +42,40 @@ class AIService {
     const allowedPhrases = [
       'show menu',
       'show the menu',
+      'give menu',
+      'give the menu',
+      'menu items',
+      'what is on the menu',
+      "what's on the menu",
       'check price',
       'check prices',
       'tell cheapest',
       'cheapest',
       'best',
+      "what's hot",
+      'whats hot',
+      'hot items',
+      'hot picks',
       'hot offer',
       'hot offers',
       'offer',
       'offers',
       'deal',
       'discount',
+      'surprise me',
+      'snack',
+      'snacks',
+      'pastry',
+      'pastries',
+      'dessert',
+      'cake',
+      'cookie',
+      'muffin',
+      'best sellers',
+      'best seller',
+      'popular',
+      'top picks',
+      'top pick',
       'recommend',
       'recommendation',
       'suggest',
@@ -81,6 +112,113 @@ class AIService {
     return phrases.any(text.contains);
   }
 
+  bool _isMenuRequest(String prompt) {
+    final text = prompt.toLowerCase();
+    const phrases = [
+      'menu',
+      'show menu',
+      'show the menu',
+      'give menu',
+      'give the menu',
+      'menu items',
+      'what is on the menu',
+      "what's on the menu",
+    ];
+    return phrases.any(text.contains);
+  }
+
+  bool _isHotRequest(String prompt) {
+    final text = prompt.toLowerCase();
+    const phrases = [
+      "what's hot",
+      'whats hot',
+      'hot items',
+      'hot picks',
+      'best sellers',
+      'best seller',
+      'popular',
+      'top picks',
+      'top pick',
+    ];
+    return phrases.any(text.contains);
+  }
+
+  bool _isSurpriseRequest(String prompt) {
+    final text = prompt.toLowerCase();
+    const phrases = ['surprise me', 'surprise', 'random pick'];
+    return phrases.any(text.contains);
+  }
+
+  bool _isSnackRequest(String prompt) {
+    final text = prompt.toLowerCase();
+    const phrases = [
+      'snack',
+      'snacks',
+      'pastry',
+      'pastries',
+      'dessert',
+      'cake',
+      'cookie',
+      'muffin',
+    ];
+    return phrases.any(text.contains);
+  }
+
+  String _localMenuResponse(List<Product> menu) {
+    if (menu.isEmpty) {
+      return "Menu is still loading. Please try again in a moment.";
+    }
+    final items = menu.take(6).map(
+      (p) => "• ☕ ${p.name} — \$${p.price.toStringAsFixed(2)}",
+    ).join('\n');
+    return "Here is our menu:\n$items";
+  }
+
+  String _localHotResponse(List<Product> menu) {
+    if (menu.isEmpty) {
+      return "I do not have the menu yet. Please try again in a moment.";
+    }
+    final sorted = List<Product>.from(menu)
+      ..sort((a, b) => b.rating.compareTo(a.rating));
+    final picks = sorted.take(3).map((p) => p.name).join(', ');
+    return "Popular picks right now: $picks.";
+  }
+
+  String _localSurpriseResponse(List<Product> menu) {
+    if (menu.isEmpty) {
+      return "I do not have the menu yet. Please try again in a moment.";
+    }
+    final pick = menu.first;
+    return "Surprise pick: ${pick.name} (\$${pick.price.toStringAsFixed(2)}).";
+  }
+
+  String _localSnackResponse(List<Product> menu) {
+    if (menu.isEmpty) {
+      return "Menu is still loading. Please try again in a moment.";
+    }
+    final snacks = menu.where((p) =>
+      p.categoryId != 1 &&
+      p.categoryId != 2 &&
+      p.categoryId != 3 &&
+      p.categoryId != 4
+    ).toList();
+    if (snacks.isEmpty) {
+      return "We do not have snack items listed right now. Try our coffee menu instead.";
+    }
+    final items = snacks.take(6).map(
+      (p) => "• 🍰 ${p.name} — \$${p.price.toStringAsFixed(2)}",
+    ).join('\n');
+    return "Here are our snacks:\n$items";
+  }
+
+  String _fallbackResponse(String prompt, List<Product> menu) {
+    if (_isMenuRequest(prompt)) return _localMenuResponse(menu);
+    if (_isHotRequest(prompt)) return _localHotResponse(menu);
+    if (_isSurpriseRequest(prompt)) return _localSurpriseResponse(menu);
+    if (_isSnackRequest(prompt)) return _localSnackResponse(menu);
+    return "I am having trouble connecting right now. You can ask about the menu, prices, or offers.";
+  }
+
   // Feature 1: Chatbot that answers questions about menu
   Future<String> getChatResponse(String userPrompt, List<Product> menu) async {
     if (_apiKey.isEmpty) {
@@ -94,6 +232,22 @@ class AIService {
 
     if (_isOrderActionRequest(userPrompt)) {
       return "I can't perform that specified task. You can place orders directly in the app using the cart.";
+    }
+
+    if (_isMenuRequest(userPrompt)) {
+      return _localMenuResponse(menu);
+    }
+
+    if (_isHotRequest(userPrompt)) {
+      return _localHotResponse(menu);
+    }
+
+    if (_isSurpriseRequest(userPrompt)) {
+      return _localSurpriseResponse(menu);
+    }
+
+    if (_isSnackRequest(userPrompt)) {
+      return _localSnackResponse(menu);
     }
 
     final menuDetails = menu.map((p) => "${p.name}: \$${p.price.toStringAsFixed(2)}").join(", ");
@@ -138,7 +292,7 @@ class AIService {
           final errorMsg = errorData['error']['message'] ?? 'Unknown error';
           return "AI Error: $errorMsg";
         } catch (_) {
-          return "I'm having trouble thinking right now. Please try again later!";
+          return _fallbackResponse(userPrompt, menu);
         }
       }
     } catch (e) {
@@ -147,7 +301,7 @@ class AIService {
         if (e is SocketException) {
           return "It seems like there's a network issue. Please check your connection and try again.";
         } 
-        return "Sorry, I'm having trouble connecting to my coffee sensors. Please try again!";
+        return _fallbackResponse(userPrompt, menu);
     }
   }
 

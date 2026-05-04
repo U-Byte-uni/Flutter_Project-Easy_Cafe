@@ -37,9 +37,13 @@ class FavoritesScreen extends StatelessWidget {
                               child: Icon(Icons.arrow_back, size: 24),
                             ),
                           ),
-                        const Text(
+                        Text(
                           "Favorites",
-                          style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: AppTheme.headingFontFamily,
+                          ),
                         ),
                       ],
                     ),

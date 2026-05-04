@@ -45,10 +45,11 @@ class ProfileScreen extends StatelessWidget {
             Text(
               displayName,
               textAlign: TextAlign.center,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
+                fontFamily: AppTheme.headingFontFamily,
               ),
             ),
             const SizedBox(height: 32),

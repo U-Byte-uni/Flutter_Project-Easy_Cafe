@@ -10,6 +10,7 @@ class AppTheme {
   static const Color primaryColor = Color(0xFFD17842);
   static const Color cardColor = Color(0xFF141921);
   static const Color secondaryTextColor = Color(0xFF52555A);
+  static const String headingFontFamily = 'Comic Sans MS';
 
   // Background gradient: near-black → dark espresso brown
   static const LinearGradient backgroundGradient = LinearGradient(
@@ -40,6 +41,7 @@ class AppTheme {
         color: Colors.white,
         fontSize: 20,
         fontWeight: FontWeight.bold,
+        fontFamily: headingFontFamily,
       ),
     ),
 

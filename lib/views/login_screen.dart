@@ -69,9 +69,13 @@ class _LoginScreenState extends State<LoginScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 50),
-              const Text(
+              Text(
                 "Welcome to\nEasy Cafe",
-                style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: AppTheme.headingFontFamily,
+                ),
               ),
               const SizedBox(height: 10),
               Text(

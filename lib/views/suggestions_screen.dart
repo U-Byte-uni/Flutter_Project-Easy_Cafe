@@ -3,6 +3,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
 import '../controllers/cafe_controller.dart';
 import '../models/product.dart';
+import '../services/ai_service.dart';
 import '../services/weather_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/product_card.dart';
@@ -17,11 +18,15 @@ class SuggestionsScreen extends StatefulWidget {
 
 class _SuggestionsScreenState extends State<SuggestionsScreen> {
   final WeatherService _weatherService = WeatherService();
-  Map<String, dynamic>? _weatherData;
+  final AIService _aiService = AIService();
   String _recommendation = "Loading recommendation...";
   bool _isLoading = true;
   double? _temperature;
   String _weatherCondition = 'Clear';
+  bool _isAiLoading = false;
+  bool _showAiRecommendations = false;
+  String _aiReason = '';
+  List<Product> _aiProducts = [];
 
   List<Product> _getWeatherProducts(List<Product> allProducts) {
     if (_temperature == null) return allProducts.take(5).toList();
@@ -52,6 +57,100 @@ class _SuggestionsScreenState extends State<SuggestionsScreen> {
     return sorted.take(5).toList();
   }
 
+  List<Product> _getBeverages(List<Product> allProducts) {
+    return allProducts.where((product) =>
+      product.categoryId == 1 ||
+      product.categoryId == 2 ||
+      product.categoryId == 3 ||
+      product.categoryId == 4
+    ).toList();
+  }
+
+  List<Product> _getSnacks(List<Product> allProducts) {
+    return allProducts.where((product) =>
+      product.categoryId != 1 &&
+      product.categoryId != 2 &&
+      product.categoryId != 3 &&
+      product.categoryId != 4
+    ).toList();
+  }
+
+  Future<void> _consultAi(List<Product> allProducts) async {
+    if (_temperature == null || allProducts.isEmpty) return;
+
+    final beverages = _getBeverages(allProducts);
+    final snacks = _getSnacks(allProducts);
+
+    final weatherPicks = _getWeatherProducts(allProducts);
+    final coffeePick = weatherPicks.firstWhere(
+      (p) => beverages.contains(p),
+      orElse: () => beverages.isNotEmpty ? beverages.first : allProducts.first,
+    );
+
+    Product? snackPick = snacks.isNotEmpty ? snacks.first : null;
+
+    final picks = <Product>[
+      coffeePick,
+      if (snackPick != null && snackPick.id != coffeePick.id) snackPick,
+    ];
+
+    if (snackPick == null) {
+      final fallback = allProducts.firstWhere(
+        (p) => p.id != coffeePick.id,
+        orElse: () => allProducts.first,
+      );
+      if (!picks.any((p) => p.id == fallback.id)) {
+        picks.add(fallback);
+      }
+    }
+
+    setState(() {
+      _isAiLoading = true;
+      _showAiRecommendations = true;
+      _aiProducts = picks;
+      _aiReason = '';
+    });
+
+    final tempLabel = (_temperature ?? 0).round();
+    final coffeeName = coffeePick.name;
+    final snackName = snackPick?.name ?? (picks.length > 1 ? picks[1].name : 'a snack');
+    final prompt = "Weather: $tempLabel°C, ${_weatherCondition.toLowerCase()}. "
+        "Menu items: ${picks.map((p) => p.name).join(', ')}. "
+        "Give exactly two short lines (two sentences on separate lines) explaining why $coffeeName and $snackName are best for this weather.";
+
+    try {
+      final response = await _aiService.getChatResponse(prompt, allProducts);
+      final lines = response
+          .split('\n')
+          .map((l) => l.trim())
+          .where((l) => l.isNotEmpty)
+          .toList();
+      String reason;
+      if (lines.length >= 2) {
+        reason = "${lines[0]}\n${lines[1]}";
+      } else {
+        reason =
+            "$coffeeName pairs well with ${_weatherCondition.toLowerCase()} weather at $tempLabel°C.\n"
+            "$snackName balances the pick for a cozy, weather-matched treat.";
+      }
+      if (mounted) {
+        setState(() {
+          _aiReason = reason;
+          _isAiLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _aiReason =
+              "$coffeeName pairs well with ${_weatherCondition.toLowerCase()} weather at $tempLabel°C.\n"
+              "$snackName balances the pick for a cozy, weather-matched treat.";
+          _isAiLoading = false;
+        });
+      }
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -68,7 +167,6 @@ class _SuggestionsScreenState extends State<SuggestionsScreen> {
       final condition = data['weather']?[0]?['main'] ?? 'Clear';
       
       setState(() {
-        _weatherData = data;
         _temperature = temp;
         _weatherCondition = condition;
         _recommendation = _weatherService.getCoffeeRecommendation(temp, condition);
@@ -98,9 +196,13 @@ class _SuggestionsScreenState extends State<SuggestionsScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     "Weather\nSuggestions",
-                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: AppTheme.headingFontFamily,
+                    ),
                   ),
                   const SizedBox(height: 30),
                   Container(
@@ -139,6 +241,70 @@ class _SuggestionsScreenState extends State<SuggestionsScreen> {
                           ],
                         ),
                   ),
+                  const SizedBox(height: 14),
+                  Align(
+                    alignment: Alignment.center,
+                    child: OutlinedButton.icon(
+                      onPressed: _isLoading
+                          ? null
+                          : () => _consultAi(context.read<CafeController>().products),
+                      icon: const Icon(Icons.auto_awesome, color: AppTheme.primaryColor),
+                      label: const Text(
+                        "Consult AI",
+                        style: TextStyle(color: AppTheme.primaryColor),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        side: BorderSide(color: AppTheme.primaryColor.withOpacity(0.6)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                  ),
+                  if (_showAiRecommendations) ...[
+                    const SizedBox(height: 18),
+                    const Text(
+                      "AI Picks for this weather",
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 10),
+                    if (_isAiLoading)
+                      const Center(child: CircularProgressIndicator())
+                    else
+                      Text(
+                        _aiReason,
+                        style: const TextStyle(color: Colors.white70, height: 1.4),
+                      ),
+                    const SizedBox(height: 14),
+                    SizedBox(
+                      height: 220,
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: _aiProducts.length,
+                        itemBuilder: (context, index) {
+                          return SizedBox(
+                            width: 155,
+                            child: Padding(
+                              padding: const EdgeInsets.only(right: 12),
+                              child: ProductCard(
+                                product: _aiProducts[index],
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => ProductDetailScreen(
+                                        product: _aiProducts[index],
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 30),
                   const Text(
                     "Special for this weather",
