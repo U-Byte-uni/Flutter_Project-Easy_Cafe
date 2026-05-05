@@ -219,6 +219,66 @@ class AIService {
     return "I am having trouble connecting right now. You can ask about the menu, prices, or offers.";
   }
 
+  Future<String> getWeatherRecommendation({
+    required double temp,
+    required String condition,
+    required List<Product> menu,
+    required List<Product> picks,
+  }) async {
+    if (_apiKey.isEmpty) {
+      return "I cannot reach the AI right now.";
+    }
+
+    if (picks.isEmpty) {
+      return "No products available for a recommendation.";
+    }
+
+    final pickNames = picks.map((p) => p.name).join(', ');
+    final systemPrompt =
+        "You are the Easy Cafe weather assistant. You must respond with exactly two short lines, no bullets. "
+        "Explain why the selected items fit the current weather.";
+    final userPrompt =
+        "Weather: ${temp.round()}°C, ${condition.toLowerCase()}. "
+        "Selected items: $pickNames. "
+        "Write two short lines (two sentences on separate lines).";
+
+    try {
+      final response = await http.post(
+        Uri.parse(_baseUrl),
+        headers: {
+          "Authorization": "Bearer $_apiKey",
+          "Content-Type": "application/json",
+          "HTTP-Referer": "http://localhost",
+          "X-Title": "Easy Cafe App",
+        },
+        body: jsonEncode({
+          "model": _primaryModel,
+          "messages": [
+            {"role": "system", "content": systemPrompt},
+            {"role": "user", "content": userPrompt}
+          ],
+          "max_tokens": 120,
+          "temperature": 0.6,
+        }),
+      ).timeout(const Duration(seconds: 20));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final content = data['choices'][0]['message']['content']?.toString().trim();
+        if (content != null && content.isNotEmpty) {
+          return content;
+        }
+      }
+    } catch (e) {
+      debugPrint("Weather recommendation error: $e");
+    }
+
+    final fallbackPick = picks.first.name;
+    final otherPick = picks.length > 1 ? picks[1].name : picks.first.name;
+    return "$fallbackPick fits the ${condition.toLowerCase()} weather at ${temp.round()}°C.\n"
+        "$otherPick adds a balanced, comforting pairing for today.";
+  }
+
   // Feature 1: Chatbot that answers questions about menu
   Future<String> getChatResponse(String userPrompt, List<Product> menu) async {
     if (_apiKey.isEmpty) {

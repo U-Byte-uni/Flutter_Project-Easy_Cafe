@@ -114,12 +114,13 @@ class _SuggestionsScreenState extends State<SuggestionsScreen> {
     final tempLabel = (_temperature ?? 0).round();
     final coffeeName = coffeePick.name;
     final snackName = snackPick?.name ?? (picks.length > 1 ? picks[1].name : 'a snack');
-    final prompt = "Weather: $tempLabel°C, ${_weatherCondition.toLowerCase()}. "
-        "Menu items: ${picks.map((p) => p.name).join(', ')}. "
-        "Give exactly two short lines (two sentences on separate lines) explaining why $coffeeName and $snackName are best for this weather.";
-
     try {
-      final response = await _aiService.getChatResponse(prompt, allProducts);
+      final response = await _aiService.getWeatherRecommendation(
+        temp: _temperature ?? 0,
+        condition: _weatherCondition,
+        menu: allProducts,
+        picks: picks,
+      );
       final lines = response
           .split('\n')
           .map((l) => l.trim())
